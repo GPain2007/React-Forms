@@ -1,53 +1,29 @@
-import { useState } from "react";
 import Input from "./Input.jsx";
+import { isEmail, isNotEmpty, hasMinLength } from "../util/validation.js";
+import { useInput } from "../hooks/useInput.js";
 
 export default function Login() {
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-
-  const [values, setValues] = useState({
-    email: "",
-    password: "",
-  });
-  const [didEdit, setDidEdit] = useState({
-    email: false,
-    password: false,
-  });
-
-  const emailInvalid = didEdit.email && !values.email.includes("@");
-  const passwordInvalid =
-    didEdit.password &&
-    (values.password.length < 8 || values.password.length > 20);
+  const {
+    value: emailValue,
+    handleInputBlur: handleEmailBlur,
+    handleInputChange: handleEmailChange,
+    hasError: emailInvalid,
+  } = useInput("", (value) => isEmail(value) || isNotEmpty(value));
+  const {
+    value: passwordValue,
+    handleInputBlur: handlePasswordBlur,
+    handleInputChange: handlePasswordChange,
+    hasError: passwordInvalid,
+  } = useInput("", (value) => hasMinLength(value, 8));
 
   function handleSubmit(event) {
     event.preventDefault();
-    console.log("Submitted:", values);
-  }
-
-  // function handleEmailChange(event) {
-  //   setEmail(event.target.value);
-  // }
-
-  // function handlePasswordChange(event) {
-  //   setPassword(event.target.value);
-  // }
-
-  function handleValuesChange(identifier, event) {
-    setValues((preValues) => ({
-      ...preValues,
-      [identifier]: event.target.value,
-    }));
-    setDidEdit((preEdit) => ({
-      ...preEdit,
-      [identifier]: false,
-    }));
-  }
-
-  function handleInputBlur(identifier) {
-    setDidEdit((preEdit) => ({
-      ...preEdit,
-      [identifier]: true,
-    }));
+    if (emailInvalid || passwordInvalid) {
+      return;
+    }
+    console.log("Form submitted!", emailValue, passwordValue);
+    // Here you would typically send the data to your server
+    // and handle the response accordingly.
   }
 
   return (
@@ -60,9 +36,9 @@ export default function Login() {
           id="email"
           type="email"
           name="email"
-          onBlur={() => handleInputBlur("email")}
-          onChange={(event) => handleValuesChange("email", event)}
-          value={values.email}
+          onBlur={handleEmailBlur}
+          onChange={handleEmailChange}
+          value={emailValue}
           error={emailInvalid ? "Email is not valid" : ""}
         />
         <Input
@@ -70,9 +46,9 @@ export default function Login() {
           id="password"
           type="password"
           name="password"
-          onBlur={() => handleInputBlur("password")}
-          onChange={(event) => handleValuesChange("passsword", event)}
-          value={values.password}
+          onBlur={handlePasswordBlur}
+          onChange={handlePasswordChange}
+          value={passwordValue}
           error={
             passwordInvalid
               ? "Password must be between 8 and 20 characters"
